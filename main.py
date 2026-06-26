@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 # File-based database setup
-DB_FILE = "tasks_db.json"
+DB_FILE = os.getenv("DB_FILE", "tasks_db.json")
 
 def get_db():
     if not os.path.exists(DB_FILE):
