@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeSaver AI — Autonomous Productivity Companion</title>
+    <meta name="description" content="AI-powered productivity companion that deconstructs your goals and schedules them autonomously before deadlines are missed.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- ============ NOISE OVERLAY ============ -->
+    <div class="noise-overlay"></div>
+
+    <!-- ============ AMBIENT BACKGROUND ============ -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- ============ NAVBAR ============ -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="nav-logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-name">LifeSaver<span class="logo-ai">AI</span></span>
+                    <span class="logo-tag">Autonomous Productivity</span>
+                </div>
+            </div>
+
+            <div class="nav-center">
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-tab="planner">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Planner
+                    </button>
+                    <button class="nav-tab" data-tab="tasks">
+                        <i class="fa-solid fa-list-check"></i> Tasks
+                        <span class="tab-badge" id="task-count-badge">0</span>
+                    </button>
+                    <button class="nav-tab" data-tab="calendar">
+                        <i class="fa-solid fa-calendar-days"></i> Schedule
+                    </button>
+                    <button class="nav-tab" data-tab="chat">
+                        <i class="fa-solid fa-comment-dots"></i> Companion
+                    </button>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <div id="api-status-badge" class="status-pill status-checking">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Checking...</span>
+                </div>
+                <button id="clear-db-btn" class="btn-ghost btn-sm" title="Reset all tasks">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============ HERO SECTION ============ -->
+    <section class="hero-section" id="tab-planner">
+        <div class="hero-inner">
+            <div class="hero-left">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-microchip-ai"></i>
+                    Powered by Google Gemini 2.5 Flash
+                </div>
+                <h1 class="hero-title">
+                    Beat every deadline.<br>
+                    <span class="title-gradient">Automatically.</span>
+                </h1>
+                <p class="hero-desc">
+                    Describe your goal in plain English. Our AI agent deconstructs it into prioritized subtasks, maps dependencies, and schedules them into your day — all in seconds.
+                </p>
+
+                <!-- Goal Input Card -->
+                <div class="goal-card">
+                    <div class="goal-card-header">
+                        <div class="goal-card-icon">
+                            <i class="fa-solid fa-crosshairs"></i>
+                        </div>
+                        <div>
+                            <p class="goal-card-label">What's your goal or deadline?</p>
+                            <p class="goal-card-hint">Be specific — the more detail, the better the plan.</p>
+                        </div>
+                    </div>
+
+                    <textarea id="goal-input" class="goal-textarea" rows="3"
+                        placeholder="e.g. I need to prepare and submit my machine learning assignment by Sunday. I haven't started yet and need to research the topic, implement the model, write the report, and submit on the portal."></textarea>
+
+                    <div class="goal-footer">
+                        <div class="deadline-control">
+                            <label class="control-label">
+                                <i class="fa-solid fa-hourglass-half"></i> Deadline
+                            </label>
+                            <div class="slider-group">
+                                <input id="deadline-slider" type="range" min="1" max="14" value="3" class="custom-slider">
+                                <span id="deadline-val" class="slider-val">3 days</span>
+                            </div>
+                        </div>
+
+                        <button id="plan-btn" class="btn-primary btn-lg">
+                            <span class="btn-icon"><i id="plan-icon" class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span id="plan-text">Generate AI Plan</span>
+                            <span class="btn-shimmer"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feature Tags -->
+                <div class="feature-tags">
+                    <span class="feature-tag"><i class="fa-solid fa-brain"></i> Agentic Reasoning</span>
+                    <span class="feature-tag"><i class="fa-solid fa-diagram-project"></i> Dependency Mapping</span>
+                    <span class="feature-tag"><i class="fa-solid fa-clock-rotate-left"></i> Smart Scheduling</span>
+                    <span class="feature-tag"><i class="fa-solid fa-shield-check"></i> Anti-Procrastination</span>
+                </div>
+            </div>
+
+            <div class="hero-right">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-purple">
+                            <i class="fa-solid fa-tasks"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-number" id="stat-total">0</p>
+                            <p class="stat-label">Total Tasks</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-emerald">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-number" id="stat-done">0</p>
+                            <p class="stat-label">Completed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-amber">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-number" id="stat-high">0</p>
+                            <p class="stat-label">High Priority</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-number" id="stat-progress">0%</p>
+                            <p class="stat-label">Progress</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Ring -->
+                <div class="progress-ring-card">
+                    <div class="ring-wrapper">
+                        <svg class="ring-svg" viewBox="0 0 120 120">
+                            <defs>
+                                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#a855f7"/>
+                                    <stop offset="100%" style="stop-color:#14b8a6"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="ring-track" cx="60" cy="60" r="50"/>
+                            <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50"
+                                stroke-dasharray="314" stroke-dashoffset="314"/>
+                        </svg>
+                        <div class="ring-center">
+                            <span class="ring-pct" id="ring-pct">0%</span>
+                            <span class="ring-sub">Done</span>
+                        </div>
+                    </div>
+                    <div class="ring-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot dot-rose"></span>
+                            <span id="legend-high">0 High</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot dot-amber"></span>
+                            <span id="legend-medium">0 Medium</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot dot-slate"></span>
+                            <span id="legend-low">0 Low</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips Card -->
+                <div class="tips-card">
+                    <div class="tips-header">
+                        <i class="fa-solid fa-lightbulb tips-icon"></i>
+                        <span>Productivity Tip</span>
+                    </div>
+                    <p id="tip-text" class="tips-body">The 5-Minute Rule: commit to working on the first task for just 5 minutes. The hardest part is starting — momentum takes care of the rest.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ TASKS TAB ============ -->
+    <section class="tab-section hidden" id="tab-tasks">
+        <div class="section-inner">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Deconstructed Tasks</h2>
+                    <p class="section-sub">Click any task to expand full details, dependencies, and schedule.</p>
+                </div>
+                <div class="section-actions">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="task-search" placeholder="Filter tasks..." class="search-input">
+                    </div>
+                    <div class="filter-pills" id="filter-pills">
+                        <button class="filter-pill active" data-filter="all">All</button>
+                        <button class="filter-pill" data-filter="high">🔴 High</button>
+                        <button class="filter-pill" data-filter="medium">🟡 Medium</button>
+                        <button class="filter-pill" data-filter="low">⚪ Low</button>
+                        <button class="filter-pill" data-filter="pending">Pending</button>
+                        <button class="filter-pill" data-filter="done">Done</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                <span class="progress-bar-label" id="progress-percentage">0% Complete</span>
+            </div>
+
+            <!-- Tasks List -->
+            <div id="tasks-list" class="tasks-list">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fa-solid fa-rocket"></i></div>
+                    <h3 class="empty-title">No tasks yet</h3>
+                    <p class="empty-sub">Head to the Planner tab and enter your goal to generate an AI-powered task plan.</p>
+                    <button class="btn-primary" onclick="switchTab('planner')">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Go to Planner
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Add -->
+            <div class="quick-add">
+                <div class="quick-add-icon"><i class="fa-solid fa-plus"></i></div>
+                <input id="manual-task-title" type="text" placeholder="Quick add a task..." class="quick-add-input">
+                <button id="add-task-btn" class="btn-primary btn-sm">Add Task</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ CALENDAR TAB ============ -->
+    <section class="tab-section hidden" id="tab-calendar">
+        <div class="section-inner">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Autonomous Schedule</h2>
+                    <p class="section-sub">AI-generated time blocks ordered by dependencies and priorities.</p>
+                </div>
+                <div class="calendar-legend">
+                    <span class="cal-legend-item"><span class="cal-dot dot-rose"></span> High</span>
+                    <span class="cal-legend-item"><span class="cal-dot dot-amber"></span> Medium</span>
+                    <span class="cal-legend-item"><span class="cal-dot dot-slate"></span> Low</span>
+                    <span class="cal-legend-item"><span class="cal-dot dot-emerald"></span> Done</span>
+                </div>
+            </div>
+            <div id="calendar-timeline" class="calendar-grid">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fa-regular fa-calendar-plus"></i></div>
+                    <h3 class="empty-title">No schedule yet</h3>
+                    <p class="empty-sub">Generate a plan in the Planner tab to see your timeline.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ COMPANION CHAT TAB ============ -->
+    <section class="tab-section hidden" id="tab-chat">
+        <div class="chat-layout">
+            <!-- Sidebar -->
+            <div class="chat-sidebar">
+                <div class="chat-sidebar-header">
+                    <div class="companion-avatar">
+                        <i class="fa-solid fa-robot"></i>
+                        <span class="avatar-ping"></span>
+                    </div>
+                    <div>
+                        <h3 class="companion-name">Life Saver AI</h3>
+                        <p class="companion-status">Online — Ready to help</p>
+                    </div>
+                </div>
+                <div class="chat-context-card">
+                    <p class="context-label"><i class="fa-solid fa-circle-info"></i> About your companion</p>
+                    <p class="context-body">I'm your AI productivity coach. I'll help you overcome procrastination, break down overwhelming tasks, and keep you on track. Ask me anything!</p>
+                </div>
+                <div class="quick-prompts">
+                    <p class="quick-label">Quick Prompts</p>
+                    <button class="quick-prompt-btn" data-prompt="I'm feeling overwhelmed. Where should I start?">
+                        <i class="fa-solid fa-brain"></i> I'm overwhelmed, help me start
+                    </button>
+                    <button class="quick-prompt-btn" data-prompt="Give me a motivational push to keep going!">
+                        <i class="fa-solid fa-fire"></i> Motivate me right now!
+                    </button>
+                    <button class="quick-prompt-btn" data-prompt="What's the most important thing I should focus on?">
+                        <i class="fa-solid fa-crosshairs"></i> What should I focus on?
+                    </button>
+                    <button class="quick-prompt-btn" data-prompt="Help me avoid distractions and stay focused for the next hour.">
+                        <i class="fa-solid fa-shield"></i> Help me stay focused
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Window -->
+            <div class="chat-main">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message companion-msg">
+                        <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+                        <div class="msg-bubble">
+                            <p>Hello! I'm your <strong>Last-Minute Life Saver</strong> companion. Procrastination doesn't stand a chance.</p>
+                            <p class="mt-2">Tell me about your upcoming deadline or what's stressing you out, and let's conquer it step by step! 🚀</p>
+                            <span class="msg-time">Just now</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input id="chat-input" type="text" placeholder="Ask your companion anything..." class="chat-input">
+                    <button id="chat-send-btn" class="btn-primary chat-send-btn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ TOAST NOTIFICATION ============ -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ============ LOADING OVERLAY ============ -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-card">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring ring-2"></div>
+                <div class="spinner-ring ring-3"></div>
+            </div>
+            <p class="loading-title">Generating your plan...</p>
+            <p class="loading-sub" id="loading-sub">AI agent is analyzing your goal</p>
+            <div class="loading-steps">
+                <div class="loading-step active" id="lstep-1"><i class="fa-solid fa-check"></i> Parsing goal</div>
+                <div class="loading-step" id="lstep-2"><i class="fa-solid fa-check"></i> Mapping dependencies</div>
+                <div class="loading-step" id="lstep-3"><i class="fa-solid fa-check"></i> Building schedule</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ APP SCRIPT ============ -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
