@@ -23,10 +23,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# File-based database setup
+# Database setup: support MongoDB Atlas when MONGO_URI is set, fallback to local file
 DB_FILE = os.getenv("DB_FILE", "tasks_db.json")
+_mongo_client = None
+
+def get_mongo_db():
+    global _mongo_client
+    mongo_uri = os.getenv("MONGO_URI")
+    if not mongo_uri:
+        return None
+    if _mongo_client is None:
+        from pymongo import MongoClient
+        _mongo_client = MongoClient(mongo_uri)
+    try:
+        # get_default_database() uses db name from URI, e.g. mongodb+srv://.../lifesaver
+        return _mongo_client.get_default_database()
+    except Exception:
+        return _mongo_client["lifesaver_db"]
 
 def get_db():
+    db = get_mongo_db()
+    if db is not None:
+        try:
+            state = db.app_state.find_one({"_id": "global_state"})
+            if not state:
+                state = {"tasks": [], "chat_history": []}
+                db.app_state.insert_one({"_id": "global_state", "tasks": [], "chat_history": []})
+            return state
+        except Exception as e:
+            print("MongoDB error on load, falling back to local file:", e)
+            
     if not os.path.exists(DB_FILE):
         # Default starting data
         initial_data = {
@@ -43,6 +69,16 @@ def get_db():
         return {"tasks": [], "chat_history": []}
 
 def save_db(data):
+    db = get_mongo_db()
+    if db is not None:
+        try:
+            data_copy = dict(data)
+            data_copy["_id"] = "global_state"
+            db.app_state.replace_one({"_id": "global_state"}, data_copy, upsert=True)
+            return
+        except Exception as e:
+            print("MongoDB error on save, falling back to local file:", e)
+            
     with open(DB_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
